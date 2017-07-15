@@ -106,10 +106,10 @@ def _validate_otu_ids_and_tree(counts, otu_ids, tree):
                                 " ".join(missing_tip_names)))
 
 
-def _vectorize_counts_and_tree(counts, otu_ids, tree):
+def _vectorize_counts_and_tree(counts, otu_ids, tree_index):
     """ Index tree and convert counts to np.array in corresponding order
     """
-    tree_index = tree.to_array(nan_length_value=0.0)
+    # tree_index = tree.to_array(nan_length_value=0.0)
     otu_ids = np.asarray(otu_ids)
     counts = np.atleast_2d(counts)
     counts_by_node = _nodes_by_counts(counts, otu_ids, tree_index)
