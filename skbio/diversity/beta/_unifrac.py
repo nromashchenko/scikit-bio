@@ -150,9 +150,9 @@ def unweighted_unifrac(u_counts, v_counts, otu_ids, tree, validate=True):
 
 
 @experimental(as_of="0.4.1")
-def weighted_unifrac(u_counts, v_counts, otu_ids, tree,
-                     normalized=_normalize_weighted_unifrac_by_default,
-                     validate=True):
+def weighted_unifrac(u_counts, v_counts, otu_ids, tree_index,
+                     normalized=_normalize_weighted_unifrac_by_default):
+                     # validate=True):
     """ Compute weighted UniFrac with or without branch length normalization
 
     Parameters
@@ -276,23 +276,24 @@ def weighted_unifrac(u_counts, v_counts, otu_ids, tree,
     0.33
 
     """
+    if normalized:
+        raise NotImplementedError
     u_node_counts, v_node_counts, u_total_count, v_total_count, tree_index =\
-        _setup_pairwise_unifrac(u_counts, v_counts, otu_ids, tree, validate,
-                                normalized=normalized, unweighted=False)
+        _setup_pairwise_unifrac(u_counts, v_counts, otu_ids, tree_index, False,
+                                normalized=False, unweighted=False)
     branch_lengths = tree_index['length']
 
-    if normalized:
-        tip_indices = _get_tip_indices(tree_index)
-        node_to_root_distances = _tip_distances(branch_lengths, tree,
-                                                tip_indices)
-        return _weighted_unifrac_normalized(u_node_counts, v_node_counts,
-                                            u_total_count, v_total_count,
-                                            branch_lengths,
-                                            node_to_root_distances)
-    else:
-        return _weighted_unifrac(u_node_counts, v_node_counts,
-                                 u_total_count, v_total_count,
-                                 branch_lengths)[0]
+    # if normalized:
+    #     tip_indices = _get_tip_indices(tree_index)
+    #     node_to_root_distances = _tip_distances(branch_lengths, tree,
+    #                                             tip_indices)
+    #     return _weighted_unifrac_normalized(u_node_counts, v_node_counts,
+    #                                         u_total_count, v_total_count,
+    #                                         branch_lengths,
+    #                                         node_to_root_distances)
+    return _weighted_unifrac(u_node_counts, v_node_counts,
+                             u_total_count, v_total_count,
+                             branch_lengths)[0]
 
 
 def _validate(u_counts, v_counts, otu_ids, tree):
@@ -300,11 +301,11 @@ def _validate(u_counts, v_counts, otu_ids, tree):
     _validate_otu_ids_and_tree(counts=u_counts, otu_ids=otu_ids, tree=tree)
 
 
-def _setup_pairwise_unifrac(u_counts, v_counts, otu_ids, tree, validate,
+def _setup_pairwise_unifrac(u_counts, v_counts, otu_ids, tree_index, validate,
                             normalized, unweighted):
 
-    if validate:
-        _validate(u_counts, v_counts, otu_ids, tree)
+    # if validate:
+    #     _validate(u_counts, v_counts, otu_ids, tree)
 
     # temporarily store u_counts and v_counts in a 2-D array as that's what
     # _vectorize_counts_and_tree takes
@@ -312,7 +313,7 @@ def _setup_pairwise_unifrac(u_counts, v_counts, otu_ids, tree, validate,
     v_counts = np.asarray(v_counts)
     counts = np.vstack([u_counts, v_counts])
     counts_by_node, tree_index, branch_lengths = \
-        _vectorize_counts_and_tree(counts, otu_ids, tree)
+        _vectorize_counts_and_tree(counts, otu_ids, tree_index)
     # unpack counts vectors for single pairwise UniFrac calculation
     u_node_counts = counts_by_node[0]
     v_node_counts = counts_by_node[1]
